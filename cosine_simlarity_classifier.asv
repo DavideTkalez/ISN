@@ -1,0 +1,36 @@
+function class = cosine_simlarity_classifier(ref_open,ref_close,epoca)
+   
+global fs
+   %impunt 
+        % ref_open: apertura massimale su cui calcolare il prototipo di classe
+        % fer_close: chiusura massimale su cui calcolare il protoripo
+        % epoca: epoca di segnale da classificare
+   %output:
+        % class = 0 apertura, 1 chiusura
+
+   % calcolo dei prototipi
+   epoc_len = fs*0.250; 
+   prot_open = ARV_overlapped(ref_open,epoc_len,0.5);
+   prot_close = ARV_overlapped(ref_close,epoc_len,0.5);
+
+   % Calcolo ARV per l'epoca da classificare
+   arv_epoc = ARV_overlapped(epoca,epoc_len,0.5);
+   
+   n_ch = size(prot_close,2);
+   cs_open = zeros(1,n_ch);
+   cs_close = zeros(1,n_ch);
+   % Calcolo cosine similarity
+   for ch = 1:n_ch
+        cs_open(ch) = dot(prot_open(:,ch),arv_epoc(:,ch))/(norm(prot_open(:,ch))*norm(arv_epoc(:,ch)));
+        cs_close(ch) = dot(prot_close(:,ch),arv_epoc(:,ch))/(norm(prot_close(:,ch))*norm(arv_epoc(:,ch)));
+   end
+   class = zeros(1,n_ch);
+   for ch = 1:n_ch
+       % Predizione classe
+       if cs_open >= cs_close
+           class = 0;
+       else
+           class = 1;
+       end
+   end
+end
